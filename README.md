@@ -142,3 +142,25 @@ This I have automated using bash/jq:
 ```
 while $(terraform show --json | jq '.values.outputs.puzzle1_finished.value|not'); do terraform apply -auto-approve > /dev/null; done
 ```
+
+Using the unfold technique is slow:
+
+```
+time terraform apply -auto-approve
+
+Changes to Outputs:
+  + puzzle1          = 4656
+  + puzzle1_finished = true
+
+You can apply this plan to save these new output values
+to the Terraform state, without changing any real
+infrastructure.
+
+Apply complete! Resources: 0 added, 0 changed, 0 destroyed.
+
+Outputs:
+
+puzzle1 = 4656
+puzzle1_finished = true
+terraform apply -auto-approve  36005.15s user 61.87s system 144% cpu 6:56:03.19 total
+```
