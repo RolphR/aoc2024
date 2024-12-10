@@ -164,3 +164,46 @@ puzzle1 = 4656
 puzzle1_finished = true
 terraform apply -auto-approve  36005.15s user 61.87s system 144% cpu 6:56:03.19 total
 ```
+
+### Not in range()
+
+The range function can't generate more than 1024 elements:
+
+```
+> range(0,1024)
+tolist([
+  0,
+  ...
+  1023,
+])
+> range(0,1025)
+╷
+│ Error: Error in function call
+│
+│   on <console-input> line 1:
+│   (source code not available)
+│
+│ Call to function "range" failed: more than 1024 values were generated; either decrease the difference between start
+│ and end or use a smaller step.
+╵
+
+```
+
+See [range Function](https://developer.hashicorp.com/terraform/language/functions/range):
+
+```
+Because the sequence is created as a physical list in memory, Terraform imposes an artificial limit of 1024 numbers in the resulting sequence in order to avoid unbounded memory usage if, for example, a very large value were accidentally passed as the limit or a very small value as the step. If the algorithm above would append the 1025th number to the sequence, the function immediately exits with an error.
+```
+
+### OOM
+
+On day 7: it's nice to see OOM killer loves terraform:
+
+```
+[2940844.740856] oom-kill:constraint=CONSTRAINT_NONE,nodemask=(null),cpuset=user.slice,mems_allowed=0,global_oom,task_memcg=/user.slice/user-1000.slice/user@1000.service/app.slice/vte-spawn-f6c959c2-28db-436b-b16d-ddc2d44a98b8.scope,task=terraform,pid=6569,uid=1000
+[2940844.740912] Out of memory: Killed process 6569 (terraform) total-vm:57699076kB, anon-rss:56331000kB, file-rss:2536kB, shmem-rss:0kB, UID:1000 pgtables:110660kB oom_score_adj:100
+[2940847.609186] oom_reaper: reaped process 6569 (terraform), now anon-rss:0kB, file-rss:80kB, shmem-rss:0kB
+```
+
+Halving the problem space seemed to have addressed that.
+Fun fact: terraform memory consumption peaked at 80% only to slowly decrease, until a result was given
